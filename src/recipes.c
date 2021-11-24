@@ -75,11 +75,9 @@ void grandmaSpecialRecipe(double complex ta, double complex tb, double complex t
 	gens[(0 * 2 + 1) * 2 + 1] = ta/2; 
                                 
 	gens[(1 * 2 + 0) * 2 + 0] = (tb - I * Q)/2;
-	gens[(1 * 2 + 1) * 2 + 0] = (tb * tab - 2 * ta + I * Q * tab)/(z0*(2 * tab + 4));
-	gens[(1 * 2 + 0) * 2 + 1] = ((ta * tab - 2 * ta - I * Q * tab)*z0)/(2 * tab - 4);
-	gens[(1 * 2 + 1) * 2 + 1] = (tb + 2 * I * Q)/2; 
-                                
-             
+	gens[(1 * 2 + 1) * 2 + 0] = (tb * tab - 2 * ta - I * Q * tab)/(z0*(2 * tab + 4));
+	gens[(1 * 2 + 0) * 2 + 1] = ((tb * tab - 2 * ta + I * Q * tab)*z0)/(2 * tab - 4);
+	gens[(1 * 2 + 1) * 2 + 1] = (tb + I * Q)/2; 
 	gens[(2 * 2 + 0) * 2 + 0] =  gens[(0 * 2 + 1) * 2 + 1];
 	gens[(2 * 2 + 1) * 2 + 0] = -gens[(0 * 2 + 1) * 2 + 0];
 	gens[(2 * 2 + 0) * 2 + 1] = -gens[(0 * 2 + 0) * 2 + 1];
