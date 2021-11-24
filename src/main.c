@@ -16,7 +16,7 @@
 #include "include/accidents.h"
 #include "include/progressBar.h"
 
-#include<X11/Xlib.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include "vroot.h"
@@ -60,7 +60,7 @@ int main(){
 	XGetWindowAttributes(x.dpy, x.root, &x.wa);
 
 	XAllocNamedColor(x.dpy, DefaultColormapOfScreen(DefaultScreenOfDisplay(x.dpy)), "black", &blacks, &blackx);
-	
+
 
 	double complex taBeg = 0.;
 	double complex tbBeg = 0.;
@@ -138,9 +138,9 @@ int main(){
 	//}
 	//makeContinuedFraction(10, (sqrt(35) - 5)/10.0, fareySeq);
 
-		XSetForeground(x.dpy,x.g,blacks.pixel);
-		XFillRectangle(x.dpy, x.root, x.g, 0, 0, x.wa.width, x.wa.height);
-		XFlush(x.dpy);
+	XSetForeground(x.dpy,x.g,blacks.pixel);
+	XFillRectangle(x.dpy, x.root, x.g, 0, 0, x.wa.width, x.wa.height);
+	XFlush(x.dpy);
 	while(1){
 		//Create a filename for the image based on the number of image processed
 		//TODO: Move this to its own function :)
