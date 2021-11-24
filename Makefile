@@ -1,6 +1,6 @@
 EXEC := ./ceendra
 
-CFLAGS := -g -Og -Ofast -Wall -lm -lX11 -I src/include 
+CFLAGS := -g -Og -Ofast -Wall -lm -lpthread -lX11 -I src/include 
 
 OBJS := $(patsubst src/%.c,src/%.o,$(wildcard src/*.c))
 
