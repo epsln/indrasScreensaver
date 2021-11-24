@@ -54,8 +54,8 @@ int main(){
 	image_t img;
 	image_t* pImg = &img;
 
-	pImg->w       = WIDTH;
-	pImg->h       = HEIGHT;
+	pImg->w       = x.wa.width;
+	pImg->h       = x.wa.height;
 	pImg->bounds  = BOUNDS;
 	pImg->epsi    = EPSI;
 	pImg->line    = LINE;
