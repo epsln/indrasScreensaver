@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 #include <complex.h>
+#include <pthread.h>
 
 #include "include/complexMath.h"
 #include "include/plot.h"
@@ -40,6 +41,15 @@ int main(){
 	double complex ta = 0.;
 	double complex tb = 0.;
 
+	char* speWord;//Array containing the specialWord
+	double complex*  fixRep; //2D array containing the fix point of all cyclic perm and inverse of the speWord
+	int numFP[4] = {0}; //Number of fixed point per gens
+
+	double complex* gens = (double complex*)calloc(4*2*2, sizeof(double complex));
+
+	ratio fract;
+	int wordLength = fract.p + fract.q;
+
 	XColor blackx, blacks;
 	xStuff x;
 	x.dpy = XOpenDisplay(getenv("DISPLAY"));
@@ -49,7 +59,6 @@ int main(){
 
 	XAllocNamedColor(x.dpy, DefaultColormapOfScreen(DefaultScreenOfDisplay(x.dpy)), "black", &blacks, &blackx);
 
-	double complex* gens = (double complex*)calloc(4*2*2, sizeof(double complex));
 
 	image_t img;
 	image_t* pImg = &img;
@@ -71,6 +80,10 @@ int main(){
 	XSetForeground(x.dpy,x.g,blacks.pixel);
 	XFillRectangle(x.dpy, x.root, x.g, 0, 0, x.wa.width, x.wa.height);
 	XFlush(x.dpy);
+
+	//Arguments for the threads functions
+	dfsArgs * args = malloc(sizeof(*args));
+        pthread_t threadArray[4];
 	while(1){
 		XSetForeground(x.dpy,x.g,blacks.pixel);
 		XFillRectangle(x.dpy, x.root, x.g, 0, 0, x.wa.width, x.wa.height);
@@ -78,15 +91,54 @@ int main(){
 
 		//Here, we interpolate between two traces using an easing function
 		ta = randomComplex(-2 - 1. * I, 2 + 1 * I);
-		tb = randomComplex(-2 - 1. * I, 2 + 1 * I);
+		if (rand()/(double)(RAND_MAX) > 0.5)
+			tb = randomComplex(-2 - 1. * I, 2 + 1 * I);
+		
+		else
+			tb = 2.;
 
+		fract = (ratio){0, 1}; 
+		wordLength = fract.p + fract.q;
 		//Compute some generators using a recipe...
 		//grandmaRecipe(-I*mu, 3, gens);
 		grandmaRecipe(ta, tb, gens);
 
+		for (int i = 0; i < 4; i++)
+			numFP[i] = 0;
+		getSpecialWordFromFract(fract, speWord);
+		computeRepetendsv2(gens, fixRep, numFP, speWord, wordLength);
+
+		dfsArgs *args;
 		//Explore depth first combination of generators...
 		XFlush(x.dpy);
-		computeDepthFirst(gens, pImg, x, 0);
+		for (int i = 0; i < 4; i++){
+			//Put me in a separate function pls
+			args = malloc(sizeof(dfsArgs));
+			args->gens = gens;
+			args->img = pImg;
+			args->numIm = 0;
+			//Need to implement a way to not hardcode the size of fixRep...
+			args->specialWord = calloc(fract.p + fract.q, sizeof(char));
+			args->fixRep = calloc(4 * (fract.p + fract.q + 4), sizeof(double complex));
+			strcpy(args->specialWord, speWord);
+			for (int i = 0; i < fract.p + fract.q; i++)
+				args->specialWord[i] = speWord[i];
+			
+			for (int i = 0; i < 4; i++){
+				args->numFP[i] = numFP[i];
+			}
+
+			for (int j = 0; j < 4; j++){
+				for (int h = 0; h < numFP[j]; h++){
+					args->fixRep[j * (fract.p + fract.q + 4) + h] = fixRep[j * (fract.p + fract.q + 4) + h];
+				}
+			}
+			args->wordLength = wordLength;
+			args->numBranch = modulo(4 - i, 4);
+			pthread_create(&threadArray[i], NULL, computeDepthFirst, args);
+		}
+
+		//computeDepthFirst(gens, pImg, x, 0);
 
 		sleep(3);
 	}
