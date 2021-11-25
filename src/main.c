@@ -21,15 +21,10 @@
 #include <X11/Xos.h>
 #include "vroot.h"
 
-#define ANTIALPOW 4
-#define WIDTH  2000 * ANTIALPOW 
-#define HEIGHT 2000 * ANTIALPOW
 #define BOUNDS 1 
-#define RANDBOUNDS 0 + 1 * I 
 #define EPSI  0.01 
 #define MAXWORD 10 
 #define LINE 1 
-#define BITWISE 1
 #define DEBUG 0
 
 
@@ -60,9 +55,9 @@ int main(){
 	pImg->epsi    = EPSI;
 	pImg->line    = LINE;
 	pImg->maxword = MAXWORD;
-	pImg->antialiasingPow = ANTIALPOW;
+	pImg->antialiasingPow = 1;
 	pImg->debug  = DEBUG;
-	pImg->bitwise= BITWISE;
+	pImg->bitwise= 0;
 	pImg->filename = malloc(256* sizeof(char));
 
 	pImg->pointArr = NULL;
