@@ -135,153 +135,99 @@ void computeRepetends(double complex* gens, double complex fixRep[4][3]){//See p
 	fixRep[3][2] = fix(buff_out0);
 }
 
-int checkDist(double complex* fixRep, int wordLength, double complex word[2][2], int genIndex, int numFP, double epsi){
-	//Check if the distance between a word and all fixed point of the special word is < epsi
-	for (int i = 0; i < numFP; i++){
-		//printf("%+lf %+lf\n", creal(mobiusOnPoint(word, fixRep[genIndex * wordLength + i])), cimag(mobiusOnPoint(word, fixRep[genIndex * wordLength + i])));
-		//printf("%+lf %+lf\n", creal(mobiusOnPoint(word, fixRep[genIndex * wordLength + i + 1])), cimag(mobiusOnPoint(word, fixRep[genIndex * wordLength + i + 1])));
-		//printf("%lf\n",cabs(mobiusOnPoint(word, fixRep[genIndex * wordLength + i]) - mobiusOnPoint(word, fixRep[genIndex * wordLength + i + 1]))  );
-		if (cabs(mobiusOnPoint(word, fixRep[genIndex * wordLength + i]) - mobiusOnPoint(word, fixRep[genIndex * wordLength + i + 1])) > epsi)
-				return 0;
-	}
-	return 1;	
-}
-void composeGen(double complex* gens, int index, double complex* word){
-	//Ugly workaround to those  *** arrays
-	//Uses a buffer array to not have multiple buffer in calling funct
-	//You get an input [2][2] mat which is also your output
-	//This funct mults it by the gen at given index 
-	//(a e + b g | a f + b h
-	// c e + d g | c f + d h)
-	// TODO: Check the indexes pls 
-	double complex C[2][2]; 
-	C[0][0] = word[0 * 2 + 0] * gens[(index * 2 + 0) * 2 + 0] + word[0 * 2 + 1] * gens[(index * 2 + 1) * 2 + 0];
-	C[1][0] = word[0 * 2 + 0] * gens[(index * 2 + 0) * 2 + 1] + word[0 * 2 + 1] * gens[(index * 2 + 1) * 2 + 1];
-	C[0][1] = word[1 * 2 + 0] * gens[(index * 2 + 0) * 2 + 0] + word[1 * 2 + 1] * gens[(index * 2 + 1) * 2 + 0];
-	C[1][1] = word[1 * 2 + 0] * gens[(index * 2 + 0) * 2 + 1] + word[1 * 2 + 1] * gens[(index * 2 + 1) * 2 + 1];
-
-	word[0 * 2 + 0] = C[0][0]; 
-	word[0 * 2 + 1] = C[1][0]; 
-	word[1 * 2 + 0] = C[0][1]; 	
-	word[1 * 2 + 1] = C[1][1]; 
-}
 
 
-void computeRepetendsv2(double complex* gens, double complex* fixRep, int numFP[4], char* specialWord, int wordLength){//See pp.218
-	//TODO: Clean me up
+void computeRepetendsv2(double complex* gens, double complex fixRep[4][4]){//See pp.218
 	double complex buff_gen_a[2][2];
 	double complex buff_gen_b[2][2];
 	double complex buff_gen_A[2][2];
 	double complex buff_gen_B[2][2];
 	double complex buff_out0[2][2];
 	double complex buff_out1[2][2];
-	double complex buffMat[2][2];
 	//Copy gens to buffers (since I couldn't find a clean way to matmul)
 	matrix3dto2D(gens, buff_gen_a, 0);
 	matrix3dto2D(gens, buff_gen_b, 1);
 	matrix3dto2D(gens, buff_gen_A, 2);
 	matrix3dto2D(gens, buff_gen_B, 3);
 
-	char* cyclicPerm = (char*) calloc(wordLength, sizeof(char));
-	
-	/* We have a fixRep array that is 4 * strlen(specialWord)
-	 * On each index x we store all the permutations that ends in a specific generator
-	 * We need to keep track of the number of permutations we add to each index of fixRep
-	 * Sol: an array of index of length 4
-	 * We loop on all cyclic permutations of the special words
-	 * The index of the gen is the last char of the string or specialWord[len(specialWord)]
-	 * We add the fixed point of this particular permutations to fixRep
-	 * We increment the count of number of perms on the index corresponding to the gen once we are done
-	 * We also need to account for the inverse of all special word cyclic permutations
-	 * So 2 * the number of cyclic permutations
-	 * If wordLength = 0 then no specialWord is defined and we just use the abAB word
-	*/	
-	int sizeArr = wordLength + 4;
-	
-	for (int i = 0; i < wordLength; i++){
-		for (int j = 0; j < wordLength; j++){
-			cyclicPerm[j] = specialWord[(j + i) % wordLength];
-		}
-		makeWord(buffMat, gens, cyclicPerm, wordLength);
-		fixRep[(int)cyclicPerm[wordLength - 1] * sizeArr + numFP[(int)cyclicPerm[wordLength - 1]]] = fix(buffMat);
-		numFP[(int)cyclicPerm[wordLength - 1]]++;
+	//bAba
+	matmul(buff_gen_b, buff_gen_A, buff_out0);
+	matmul(buff_out0, buff_gen_b, buff_out1);
+	matmul(buff_out1, buff_gen_a, buff_out0);
+	fixRep[0][0] = fix(buff_out0);
 
-		for (int j = 0; j < wordLength; j++)//Get the inverse of the current cyclic perm
-			cyclicPerm[j] = (specialWord[(j + i) % wordLength] + 2) % 4;
-		
-		makeWord(buffMat, gens, cyclicPerm, wordLength);
-		fixRep[(int)cyclicPerm[wordLength - 1] * sizeArr + numFP[(int)cyclicPerm[wordLength - 1]]] = fix(buffMat);
-		numFP[(int)cyclicPerm[wordLength - 1]]++;
-	}
+	//aBa
+	matmul(buff_gen_a, buff_gen_B, buff_out0);
+	matmul(buff_out0, buff_gen_a, buff_out1);
+	fixRep[0][1] = fix(buff_out1);
 
-	//Now do the same for the abAB special word	
-	char abABWord[4];
-	abABWord[0] = 0;
-	abABWord[1] = 1;
-	abABWord[2] = 2;
-	abABWord[3] = 3;
-	wordLength = 4;
-	cyclicPerm = (char*) calloc(wordLength, sizeof(char));
-	for (int i = 0; i < wordLength; i++){
-		for (int j = 0; j < wordLength; j++){
-			cyclicPerm[j] = abABWord[(j + i) % wordLength];
-		}
-		makeWord(buffMat, gens, cyclicPerm, wordLength);
-		
-		fixRep[(int)cyclicPerm[wordLength - 1] * sizeArr + numFP[(int)cyclicPerm[wordLength - 1]]] = fix(buffMat);
-		numFP[(int)cyclicPerm[wordLength - 1]]++;
+	//Baa
+	matmul(buff_gen_B, buff_gen_a, buff_out0);
+	matmul(buff_out0, buff_gen_a, buff_out1);
+	fixRep[0][2] = fix(buff_out1);
 
-		for (int j = 0; j < wordLength; j++)//Get the inverse of the current cyclic perm
-			cyclicPerm[j] = (abABWord[(j + i) % wordLength] + 2) % 4;
-		
-		makeWord(buffMat, gens, cyclicPerm, wordLength);
-		fixRep[(int)cyclicPerm[wordLength - 1] * sizeArr + numFP[(int)cyclicPerm[wordLength - 1]]] = fix(buffMat);
-		numFP[(int)cyclicPerm[wordLength - 1]]++;
-	}
-}
+	//BAba
+	matmul(buff_gen_B, buff_gen_A, buff_out0);
+	matmul(buff_out0, buff_gen_b, buff_out1);
+	matmul(buff_out1, buff_gen_a, buff_out0);
+	fixRep[0][3] = fix(buff_out0);
 
-void makeWord(double complex out[2][2], double complex* gens, char* word, int wordLength){
-	//Create a word based on its integer representation 
-	double complex buff_gen_a[2][2];
-	double complex buff_gen_b[2][2];
-	double complex buff_gen_A[2][2];
-	double complex buff_gen_B[2][2];
-	double complex *buff_out = calloc(2 * 2, sizeof(double complex));
+	//ABab
+	matmul(buff_gen_A, buff_gen_B, buff_out0);
+	matmul(buff_out0, buff_gen_a, buff_out1);
+	matmul(buff_out1, buff_gen_b, buff_out0);
+	fixRep[1][0] = fix(buff_out0);
 
-	
-	//First copy out a gen to a flattened array that we'll use to compose a word
-	//TODO: sort out the [2][2] and the flattened (*) array please
-	//TODO: Check the indexes pls 
-	
+	//AAb
+	matmul(buff_gen_A, buff_gen_A, buff_out0);
+	matmul(buff_out0, buff_gen_b, buff_out1);
+	fixRep[1][1] = fix(buff_out1);
 
-	buff_out[0 * 2 + 0] = gens[((int)word[0] * 2 + 0) * 2 + 0];
-	buff_out[0 * 2 + 1] = gens[((int)word[0] * 2 + 1) * 2 + 0];
-	buff_out[1 * 2 + 0] = gens[((int)word[0] * 2 + 0) * 2 + 1];
-	buff_out[1 * 2 + 1] = gens[((int)word[0] * 2 + 1) * 2 + 1];
+	//aBAb
+	matmul(buff_gen_a, buff_gen_B, buff_out0);
+	matmul(buff_out0, buff_gen_A, buff_out1);
+	matmul(buff_out1, buff_gen_b, buff_out0);
+	fixRep[1][2] = fix(buff_out0);
 
-	//printf("[%lf + %lf, ",    creal(buff_out[0 * 2 + 0]), cimag(buff_out[0 * 2 + 0]));
-	//printf("%lf + %lf]\n",    creal(buff_out[0 * 2 + 1]), cimag(buff_out[0 * 2 + 1]));
-	//printf("[%lf + %lf,",     creal(buff_out[1 * 2 + 0]), cimag(buff_out[1 * 2 + 0]));
-	//printf("[%lf + %lf]\n\n", creal(buff_out[1 * 2 + 1]), cimag(buff_out[1 * 2 + 1]));
+	//BabA
+	matmul(buff_gen_B, buff_gen_a, buff_out0);
+	matmul(buff_out0, buff_gen_b, buff_out1);
+	matmul(buff_out1, buff_gen_A, buff_out0);
+	fixRep[2][0] = fix(buff_out0);
 
-	matrix3dto2D(gens, buff_gen_a, 0);
-	matrix3dto2D(gens, buff_gen_b, 1);
-	matrix3dto2D(gens, buff_gen_A, 2);
-	matrix3dto2D(gens, buff_gen_B, 3);
+	//AbA
+	matmul(buff_gen_A, buff_gen_b, buff_out0);
+	matmul(buff_out0, buff_gen_A, buff_out1);
+	fixRep[2][1] = fix(buff_out1);
 
-	//Start by multiplying the 2 highest decimals
-	//Length of a number in dec is log10(num) + 1
-	//Decimal at index i of number is number % 
-	composeGen(gens, word[0], buff_out);
-	for (int i = 1; i <  wordLength; i++){
-		composeGen(gens, (int)word[i] , buff_out);
-	}
-   
-	//TODO: Check the indexes pls 
-	out[0][0] = buff_out[0 * 2 + 0];
-	out[1][0] = buff_out[0 * 2 + 1];
-	out[0][1] = buff_out[1 * 2 + 0];
-	out[1][1] = buff_out[1 * 2 + 1];
+	//bAA
+	matmul(buff_gen_b, buff_gen_A, buff_out0);
+	matmul(buff_out0, buff_gen_A, buff_out1);
+	fixRep[2][2] = fix(buff_out1);
+
+	//baBA
+	matmul(buff_gen_b, buff_gen_a, buff_out0);
+	matmul(buff_out0, buff_gen_B, buff_out1);
+	matmul(buff_out1, buff_gen_A, buff_out0);
+	fixRep[2][3] = fix(buff_out0);
+
+	//abAB
+	matmul(buff_gen_a, buff_gen_b, buff_out0);
+	matmul(buff_out0, buff_gen_A, buff_out1);
+	matmul(buff_out1, buff_gen_B, buff_out0);
+	fixRep[3][0] = fix(buff_out0);
+
+	//aaB
+	matmul(buff_gen_a, buff_gen_a, buff_out0);
+	matmul(buff_out0, buff_gen_B, buff_out1);
+	fixRep[3][1] = fix(buff_out1);
+
+	//AbaB
+	matmul(buff_gen_A, buff_gen_b, buff_out0);
+	matmul(buff_out0, buff_gen_a, buff_out1);
+	matmul(buff_out1, buff_gen_B, buff_out0);
+	fixRep[3][2] = fix(buff_out0);
+
 }
 
 void computeCycles(double complex begpt[4], double complex endpt[4], double complex* gens){

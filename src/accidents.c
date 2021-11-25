@@ -173,46 +173,6 @@ void nextPQ(int* pP, int* pQ, int denom){
 
 }
 
-void getSpecialWordFromFract(ratio fraction, char* specialWord){
-	//Fraction 2/5 -> aaaBaaB (since we don't care about the order and we'll check all cyclicPerms)
-	//pp. 276
-	//specialWord = calloc(fraction.p + fraction.q, sizeof(char));
-	char* buff  = calloc(fraction.p + fraction.q, sizeof(char));
-	int num = 1; 
-	int i = 0;
-	int idx = 3;
-	int numToAdd = fraction.q;
-	do{
-		if(num + fraction.q > fraction.p + fraction.q){
-			numToAdd = -fraction.p;
-			idx = 0;
-		}	
-		if(num - fraction.p < 1){
-			numToAdd = fraction.q;
-			idx = 3;
-		}	
-		num += numToAdd;
-		buff[i] = idx;
-		i++;
-	}while(num != 1);
-	num = fraction.q + fraction.p - 1;
-	for(int i = 0; i < fraction.p + fraction.q; i++){
-		specialWord[i] = buff[num];
-		num--;
-	}
-}
-
-void getTraceFromFract(double complex *pz0, ratio fraction){
-	//Get the trace of a particular fraction following each farey neighbor
-	ratio fractionArr[fraction.q * fraction.q];
-	makeFareySeq(fraction.q, fractionArr);
-	int i = -1;
-	while(fraction.p != fractionArr[i].p || fraction.q != fractionArr[i].q){
-		i++;
-		newtonSolver(pz0, fractionArr[i]);
-	}
-}
-
 double complex traceEqn(ratio fraction, double complex mu){
 	//Helper function to reduce a bit the line size :)
 	//printf("tPoly(%d, %d, %lf + i %lf, %lf, %lf + I %lf) = ", fraction.p, fraction.q, creal(-I*mu), cimag(-I*mu), 2.0, creal(-I * mu + 2 * I), cimag(-I * mu + 2 * I));
