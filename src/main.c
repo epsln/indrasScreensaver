@@ -79,8 +79,8 @@ int main(){
 		ta = randomComplex(-2 - 1. * I, 2 + 1 * I);
 		tb = randomComplex(-2 - 1. * I, 2 + 1 * I);
 		//Use a good ta/tb pair 75% of the time
-		if (rand()/RAND_MAX < 0.75){
-			if (rand()/RAND_MAX < 0.5){
+		if ((float)rand()/(float)RAND_MAX < 0.75){
+			if ((float)rand()/(float)RAND_MAX < 0.5){
 				grandmaRecipe(ta, 2, gens);
 			}
 			else{
