@@ -5,7 +5,6 @@ CFLAGS := -g -Og -Ofast -Wall -lm -lX11 -I src/include
 OBJS := $(patsubst src/%.c,src/%.o,$(wildcard src/*.c))
 
 build: $(OBJS)
-		mkdir -p out/
 		gcc $(OBJS) -o $(EXEC) $(CFLAGS)
 
 # pull in dependency info for *existing* .o files
