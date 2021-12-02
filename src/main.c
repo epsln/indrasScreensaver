@@ -71,19 +71,29 @@ int main(){
 		XFillRectangle(x.dpy, x.root, x.g, 0, 0, x.wa.width, x.wa.height);
 		XFlush(x.dpy);
 
-		//Here, we interpolate between two traces using an easing function
 		ta = randomComplex(-2 - 1. * I, 2 + 1 * I);
 		tb = randomComplex(-2 - 1. * I, 2 + 1 * I);
-
-		//Compute some generators using a recipe...
-		//grandmaRecipe(-I*mu, 3, gens);
-		grandmaRecipe(ta, tb, gens);
+		//Use a good ta/tb pair 75% of the time
+		if ((float)rand()/(float)RAND_MAX < 0.75){
+			if ((float)rand()/(float)RAND_MAX < 0.5){
+				grandmaRecipe(ta, 2, gens);
+			}
+			else{
+				double complex p = -ta * tb;
+				double complex q = cpow(ta, 2) + cpow(tb, 2) - 2;
+				double complex tab = (-p+csqrt(cpow(p, 2) - 4 * q))/2; 
+				grandmaSpecialRecipe(ta, tb, tab, gens);
+			}
+		}
+		else{
+			grandmaRecipe(ta, 2, gens);
+		}
 
 		//Explore depth first combination of generators...
 		XFlush(x.dpy);
 		computeDepthFirst(gens, pImg, x, 0);
 
-		sleep(3);
+		sleep(10);
 	}
 	return 0;
 }
